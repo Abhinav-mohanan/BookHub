@@ -20,6 +20,7 @@ class SignupSerializer(serializers.ModelSerializer):
         last_name = attrs.get('last_name','').strip()
         password = attrs.get('password')
         confirm_password = attrs.get('confirm_password')
+        email = attrs.get('email')
 
         if len(first_name) < 3 or not re.fullmatch(r"[a-zA-Z]+", first_name):
             raise ValidationError(
@@ -40,6 +41,8 @@ class SignupSerializer(serializers.ModelSerializer):
             raise ValidationError(
                 {"confirm_password":"Passwords do not match"}
             )
+        attrs['username'] = email
+
         return attrs
     
     def create(self, validated_data):
