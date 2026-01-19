@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import AuthenticationFailed
+from django.contrib.auth import authenticate
 from .models import CustomUser,OTP
 import re
 
@@ -82,4 +84,42 @@ class ValidateOTPSerializer(serializers.Serializer):
         user.save(update_fields=['is_email_verified'])
         otp_instance.delete()
         return user
+
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+    def __init__(self, *args, **kwargs):
+        self.excepted_role = kwargs.pop('role_restriction',None)
+        super().__init__(*args, **kwargs)
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        password = attrs.get('password')
+
+        requested_user = self.context.get('request')
+
+        user = authenticate(request=requested_user,email=email,password=password)
+
+        if not user:
+            raise AuthenticationFailed({"error":"Invalid email or password"})
         
+        if not user.is_email_verified:
+            raise AuthenticationFailed({"error":"Please verify your email address first.",
+                                        "is_email_verified":user.is_email_verified,
+                                        "email":user.email})
+        
+        if self.excepted_role and self.excepted_role != user.role:
+            raise AuthenticationFailed({"error":f"Access denied. You are not a {self.excepted_role}."})
+        
+        if not user.is_active:
+            raise AuthenticationFailed({'error':'This account has been disabled.'})
+        
+        if self.excepted_role == 'admin' and not user.is_verified:
+            raise AuthenticationFailed({"error":"You want to verify by admin to countinue"})
+        
+        attrs['user_obj'] = user
+        
+        return attrs
+    

@@ -21,3 +21,24 @@ def send_email_generic(subject,message,recipient_list):
         )
     except Exception:
         logger.error("Failed to send email",exc_info=True)
+
+def set_auth_cookie(response,tokens):
+    response.set_cookie(
+        key='access_token',
+        value=tokens['access'],
+        httponly=True,
+        secure=False,
+        samesite='Lax',
+        max_age=15*60,
+    )
+
+    response.set_cookie(
+        key='refresh_token',
+        value=tokens['refresh'],
+        httponly=True,
+        secure=False,
+        samesite='Lax',
+        max_age=15*60
+    )
+    
+    return response

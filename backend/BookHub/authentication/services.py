@@ -1,5 +1,6 @@
 from .models import OTP
 from .utils import generate_random_otp,send_email_generic
+from rest_framework_simplejwt.tokens import RefreshToken
 
 def create_otp_for_user(user):
     otp_code = generate_random_otp()
@@ -18,3 +19,13 @@ def send_signup_otp(user):
     email = user.email
 
     send_email_generic(subject,message,[email])
+
+def get_tokens_for_user(user):
+    refresh = RefreshToken.for_user(user)
+
+    return{
+        'access':str(refresh.access_token),
+        'refresh':str(refresh)
+    }
+
+    
