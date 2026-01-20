@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'authentication',
     'management',
     'books',
+    'transactions',
     
 ]
 
@@ -160,3 +161,5 @@ SIMPLE_JWT = {
     'UPDATE_LAST_LOGIN':False,
     
 }
+
+MAX_BORROW_LIMIT = env('MAX_BORROW_LIMIT',int)
