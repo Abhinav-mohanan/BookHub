@@ -1,6 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
+from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404
 from management.permissions import IsAdmin
 from .models import Book,Category
@@ -12,8 +13,10 @@ class AdminCategoryListView(APIView):
 
     def get(self,request):
         categories = Category.objects.filter(is_delete=False)
-        serializer = CategoryManagementSerializer(categories,many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        paginator = PageNumberPagination()
+        page = paginator.paginate_queryset(categories,request)
+        serializer = CategoryManagementSerializer(page,many=True)
+        return paginator.get_paginated_response(serializer.data)
         
     def post(self,request):
         serializer = CategoryManagementSerializer(data=request.data)
@@ -50,8 +53,10 @@ class AdminBookListCreateView(APIView):
     
     def get(self,request):
         books = Book.objects.filter(is_delete=False)
-        serarilzer = BookManagementSerializer(books, many=True)
-        return Response(serarilzer.data, status=status.HTTP_200_OK)
+        paginator = PageNumberPagination()
+        page = paginator.paginate_queryset(books,request)
+        serarilzer = BookManagementSerializer(page, many=True)
+        return paginator.get_paginated_response(serarilzer.data)
     
     def post(self,request):
         serializer = BookManagementSerializer(data=request.data)
