@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser,BaseUserManager
 from django.utils import timezone
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from datetime import timedelta
 import uuid
                                         
@@ -27,9 +28,9 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_verified',True)
         
         if extra_fields.get('is_staff') is not True:
-            raise('Super user must have is_staff is True.')
+            raise ValidationError('Super user must have is_staff is True.')
         if extra_fields.get('is_superuser') is not True:
-            raise('Super user must have is_superuser is True.')
+            raise ValidationError('Super user must have is_superuser is True.')
         
         return self.create_user(email, password, **extra_fields)
 
@@ -56,6 +57,7 @@ class CustomUser(AbstractUser):
     
 
 class OTP(models.Model):
+    id = models.BigAutoField(primary_key=True)
     user = models.OneToOneField(CustomUser,on_delete=models.CASCADE)
     otp = models.CharField(max_length=6)
     created_at = models.DateTimeField(auto_now_add=True)
