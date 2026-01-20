@@ -52,7 +52,6 @@ INSTALLED_APPS = [
 
     'authentication',
     'management',
-
     'books',
     
 ]
