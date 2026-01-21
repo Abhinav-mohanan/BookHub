@@ -125,4 +125,29 @@ class LoginSerializer(serializers.Serializer):
         attrs['user_obj'] = user
         
         return attrs
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['first_name', 'last_name', 'email']
+        read_only_fields = ['email']
+    
+    def validate(self, attrs):
+        if 'first_name' in attrs:
+            first_name = attrs['first_name'].strip()
+            if len(first_name) < 3 or not re.fullmatch(r"[a-zA-Z]+", first_name):
+                raise ValidationError(
+                    {"first_name": "First name must be at least 3 letters and contain only alphabets"}
+                )
+            attrs['first_name'] = first_name
+        
+        if 'last_name' in attrs:
+            last_name = attrs['last_name'].strip()
+            if len(last_name) == 0 or not re.fullmatch(r"[a-zA-Z]+", last_name):
+                raise ValidationError(
+                    {"last_name": "Last name cannot be empty and must contain only alphabets"}
+                )
+            attrs['last_name'] = last_name
+
+        return attrs
     

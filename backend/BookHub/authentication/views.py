@@ -3,7 +3,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import (SignupSerializer,ValidateOTPSerializer,LoginSerializer)
+from django.shortcuts import get_object_or_404
+from .models import CustomUser
+from .serializers import (SignupSerializer,ValidateOTPSerializer,LoginSerializer,
+                          ProfileSerializer)
 from .services import (send_signup_otp,get_tokens_for_user)
 from .utils import set_auth_cookie
 import logging
@@ -100,4 +103,19 @@ class LogoutView(APIView):
         response.delete_cookie('refresh_token')
 
         return response
+
+
+class ProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self,request):
+        serializer = ProfileSerializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
+    def patch(self,request):
+        user = request.user
+        serializer = ProfileSerializer(user,request.data,partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
