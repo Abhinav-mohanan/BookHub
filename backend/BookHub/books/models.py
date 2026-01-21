@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
+from cloudinary.models import CloudinaryField
 import uuid
 # Create your models here.
 
@@ -40,3 +41,11 @@ class Book(models.Model):
             self.slug = base_slug
         super().save(*args,**kwargs)
 
+
+class BookImage(models.Model):
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='images')
+    image = CloudinaryField('image')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Image of {self.book.title}"

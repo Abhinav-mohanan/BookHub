@@ -49,6 +49,9 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
+    'cloudinary_storage',
+    'cloudinary',
+
 
     'authentication',
     'management',
@@ -168,3 +171,12 @@ SIMPLE_JWT = {
 }
 
 MAX_BORROW_LIMIT = env('MAX_BORROW_LIMIT',int)
+
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': env('CLOUD_NAME'),
+    'API_KEY': env('API_KEY'),
+    'API_SECRET': env('API_SECRET')
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
