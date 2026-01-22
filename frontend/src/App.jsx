@@ -1,9 +1,15 @@
+import RegistrationPage from "./pages/shared/RegistrationPage"
+import { Routes,Route } from "react-router-dom"
+import UserDashboard from "./pages/user/UserDashboard"
 
 function App() {
 
   return (
     <>
-      <h1 className="text-blue-600">Vite + React</h1>
+    <Routes>
+      <Route path="/signup" element={<RegistrationPage />}  />
+      <Route path="/" element={<UserDashboard />}  />
+    </Routes>
     </>
   )
 }
