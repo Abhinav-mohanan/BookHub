@@ -93,10 +93,6 @@ class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 
-    def __init__(self, *args, **kwargs):
-        self.excepted_role = kwargs.pop('role_restriction',None)
-        super().__init__(*args, **kwargs)
-
     def validate(self, attrs):
         email = attrs.get('email')
         password = attrs.get('password')
@@ -113,14 +109,11 @@ class LoginSerializer(serializers.Serializer):
                                         "is_email_verified":user.is_email_verified,
                                         "email":user.email})
         
-        if self.excepted_role and self.excepted_role != user.role:
-            raise AuthenticationFailed({"error":f"Access denied. You are not a {self.excepted_role}."})
-        
         if not user.is_active:
             raise AuthenticationFailed({'error':'This account has been disabled.'})
         
-        if self.excepted_role == 'admin' and not user.is_verified:
-            raise AuthenticationFailed({"error":"You want to verify by admin to countinue"})
+        if user.role == 'admin' and  not user.is_verified:
+            raise AuthenticationFailed({"error":"You wait to be verified by an admin to continue"})
         
         attrs['user_obj'] = user
         
