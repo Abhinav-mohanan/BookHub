@@ -49,14 +49,11 @@ class ValidateOTPView(APIView):
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     
 
-class BaseLoginView(APIView):
-    role = ''
-
+class LoginView(APIView):
     def post(self,request):
         serializer = LoginSerializer(
             data=request.data,
             context={'request':request},
-            role_restriction=self.role
         )
 
         serializer.is_valid(raise_exception=True)
@@ -72,14 +69,6 @@ class BaseLoginView(APIView):
         set_auth_cookie(response,tokens)
 
         return response
-
-
-class UserLoginView(BaseLoginView):
-    role = 'user'
-
-
-class AdminLoginView(BaseLoginView):
-    role = 'admin'
 
 
 class LogoutView(APIView):
