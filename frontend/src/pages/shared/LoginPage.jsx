@@ -4,20 +4,42 @@ import FormInput from '../../compoenents/shared/FormInput';
 import { Lock, Mail } from 'lucide-react';
 import SubmitButton from '../../compoenents/shared/SubmitButton';
 import FormLink from '../../compoenents/shared/FormLink';
+import { LoginApi } from '../../Api/AuthenticationApi';
+import { handleApiError } from '../../compoenents/shared/ErrorHandler';
 
 const LoginPage = ({ onNavigate }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
+  const [isLoading,setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
 
+  const validateForm = (data) =>{
+    const new_erros = {}
+    if (!data.email.trim()){
+      new_erros.email = ["This field is required"]
+    }
+    if (!data.password.trim()){
+      new_erros.password = ['This field is required']
+    }
+    setErrors(new_erros)
+
+    return  Object.keys(new_erros).length === 0
+  }
+
   const handleSubmit = async () => {
+    const isValid = validateForm(formData)
+    if (!isValid) return 
     try {
-      const data = LoginApi(formData,)
+      setIsLoading(true)
+      const data = await LoginApi(formData)
+      console.log(data)
     } catch (error) {
-      setErrors(error.response?.data || {});
+      handleApiError(error,setErrors) 
+    }finally{
+      setIsLoading(false)
     }
   };
 
@@ -27,6 +49,12 @@ const LoginPage = ({ onNavigate }) => {
       ...prev,
       [name]: value
     }));
+
+    if (errors[name]){
+      setErrors((prev)=>({
+        ...prev,[name]:null
+      }))
+    }
   };
 
   return (
@@ -67,7 +95,7 @@ const LoginPage = ({ onNavigate }) => {
           </a>
         </div>
 
-        <SubmitButton onClick={handleSubmit}>
+        <SubmitButton onClick={handleSubmit} loading={isLoading}>
           Login
         </SubmitButton>
 

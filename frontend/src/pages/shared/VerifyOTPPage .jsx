@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
-import { replace, useLocation, useNavigate } from 'react-router-dom';
+import {  useLocation, useNavigate } from 'react-router-dom';
 import AuthFormContainer from '../../compoenents/shared/AuthFormContainer ';
 import FormInput from '../../compoenents/shared/FormInput';
 import SubmitButton from '../../compoenents/shared/SubmitButton';
 import { toast } from 'react-toastify';
 import { KeyRound, Mail } from 'lucide-react';
 import { VerifyOTPApi } from '../../Api/AuthenticationApi';
+import { handleApiError } from '../../compoenents/shared/ErrorHandler';
 
 const VerifyOTPPage = () => {
   const navigate = useNavigate()
@@ -20,9 +21,9 @@ const VerifyOTPPage = () => {
     try {
       const data = VerifyOTPApi(formData)
       toast.success(data?.message)
-      navigate('/login',{ replace: true })
+      navigate('/',{ replace: true })
     } catch (error) {
-      setErrors(error.response?.data || {});
+      handleApiError(error,setErrors)
     }
   };
 

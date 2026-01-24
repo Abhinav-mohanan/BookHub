@@ -8,11 +8,13 @@ import SubmitButton from '../../compoenents/shared/SubmitButton';
 import FormLink from '../../compoenents/shared/FormLink';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { handleApiError } from '../../compoenents/shared/ErrorHandler';
 
 const RegistrationPage = () => {
     const navigate = useNavigate()
     const [showPassword, setShowPassword] = useState({password:false,confirm:false});
     const [errors, setErrors] = useState({})
+    const [isLoading, setIsLoading] = useState(false)
     const [formData, setFormData] = useState({
         first_name: '',
         last_name:'',
@@ -56,18 +58,17 @@ const RegistrationPage = () => {
     const handleSubmit = async() => {
         const isValid  = validateForm(formData)
         if (!isValid ) return
+        setIsLoading(true)
         try{
           const data = await SignupApi(formData,formData.role)
           toast.success(data?.message)
           navigate('/verify-otp', {state:{'email':formData.email}})
         }catch(error){
-          if (error.response && error.response.data) {
-            setErrors(error.response.data);
-          } else {
-            toast.error('Something went wrong. Try again.');
-          }
-      }    
-    };
+          handleApiError(error,setErrors)
+        }finally{
+          setIsLoading(false)
+        }
+      };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -75,6 +76,7 @@ const RegistrationPage = () => {
         ...prev,
         [name]: value
         }));
+
         if (errors[name]){
           setErrors(prev=> ({
             ...prev,
@@ -160,14 +162,14 @@ const RegistrationPage = () => {
           hint="Admin accounts may require additional verification."
           />
 
-          <SubmitButton onClick={handleSubmit}>
+          <SubmitButton onClick={handleSubmit} loading={isLoading}>
             Register Now
           </SubmitButton>
 
           <FormLink
           text="Already have an account"
           linkText="Login here"
-          href='/login'/>
+          href='/'/>
           
       </div>
     </AuthFormContainer>
