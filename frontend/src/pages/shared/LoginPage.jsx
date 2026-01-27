@@ -1,13 +1,15 @@
 import React, { useState } from 'react'
 import AuthFormContainer from '../../compoenents/shared/AuthFormContainer ';
 import FormInput from '../../compoenents/shared/FormInput';
-import { Lock, Mail } from 'lucide-react';
+import { ColumnsSettings, Lock, Mail } from 'lucide-react';
 import SubmitButton from '../../compoenents/shared/SubmitButton';
 import FormLink from '../../compoenents/shared/FormLink';
 import { LoginApi } from '../../Api/AuthenticationApi';
 import { handleApiError } from '../../compoenents/shared/ErrorHandler';
+import { useNavigate } from 'react-router-dom';
 
 const LoginPage = ({ onNavigate }) => {
+  const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [isLoading,setIsLoading] = useState(false)
@@ -36,8 +38,15 @@ const LoginPage = ({ onNavigate }) => {
       setIsLoading(true)
       const data = await LoginApi(formData)
       console.log(data)
+      if (data.role === 'admin'){
+        navigate('/admin/dashboard')
+      }else{
+        navigate('/user/dashboard')
+      }
+
     } catch (error) {
       handleApiError(error,setErrors) 
+      console.log(error)
     }finally{
       setIsLoading(false)
     }
