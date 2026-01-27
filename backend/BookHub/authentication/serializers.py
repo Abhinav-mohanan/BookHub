@@ -122,8 +122,8 @@ class LoginSerializer(serializers.Serializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'email']
-        read_only_fields = ['email']
+        fields = ['first_name', 'last_name', 'email','date_joined']
+        read_only_fields = ['email,date_joined']
     
     def validate(self, attrs):
         if 'first_name' in attrs:

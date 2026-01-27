@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from django.db import transaction
 from .models import Category, Book,BookImage
 import re
 
@@ -36,16 +37,23 @@ class BookImageSerializer(serializers.ModelSerializer):
 
 class BookManagementSerializer(serializers.ModelSerializer):
     images = BookImageSerializer(many=True, read_only=True)
+    category_name = serializers.SerializerMethodField()
 
     uploaded_images = serializers.ListField(
-        child=serializers.ImageField(max_length=1000000, allow_empty_file=False,
-                                     write_only=True, required=False)
+        child=serializers.ImageField(max_length=1000000, allow_empty_file=False),
+                                    write_only=True, required=False
     )
+
     class Meta:
         model = Book
-        fields = ['book_id','title','author','category','quantity','slug',
+        fields = ['book_id','title','author','category','quantity','slug','category_name',
                   'available_quantity','description','is_delete','uploaded_images','images']
-        read_only_fields = ['slug','book_id','is_delete']
+        read_only_fields = ['slug','book_id','is_delete',]
+
+    def get_category_name(self,obj):
+        if obj.category:
+            return obj.category.category_name
+        return None
     
     def validate(self, attrs):
         title = attrs.get('title','').strip()
@@ -67,6 +75,7 @@ class BookManagementSerializer(serializers.ModelSerializer):
         
         return attrs
     
+    @transaction.atomic
     def create(self, validated_data):
         uploaded_images = validated_data.pop('uploaded_images', [])
         book = Book.objects.create(**validated_data)

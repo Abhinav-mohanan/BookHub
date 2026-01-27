@@ -1,7 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,AllowAny
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.shortcuts import get_object_or_404
 from .models import CustomUser
@@ -10,6 +11,8 @@ from .serializers import (SignupSerializer,ValidateOTPSerializer,LoginSerializer
 from .services import (send_signup_otp,get_tokens_for_user)
 from .utils import set_auth_cookie
 import logging
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +53,9 @@ class ValidateOTPView(APIView):
     
 
 class LoginView(APIView):
+    authentication_classes = []
+    permission_classes=[AllowAny]
+    
     def post(self,request):
         serializer = LoginSerializer(
             data=request.data,
@@ -108,3 +114,39 @@ class ProfileView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+@method_decorator(csrf_exempt, name='dispatch')
+class CustomRefreshView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        refresh_token = request.COOKIES.get('refresh_token')
+
+        if not refresh_token:
+            raise AuthenticationFailed("Refresh token missing")
+        
+        try:
+            refresh = RefreshToken(refresh_token)
+        except Exception:
+            raise AuthenticationFailed("Invalid or expired refresh token")
+
+        new_access_token = str(refresh.access_token)
+
+        response = Response(
+            {"message": "Access token refreshed"},
+            status=status.HTTP_200_OK
+        )
+
+        response.set_cookie(
+            key='access_token',
+            value=new_access_token,
+            httponly=True,
+            secure=False,      
+            samesite='Lax',
+            max_age=15 * 60, 
+            path='/'
+        )
+
+        return response
+

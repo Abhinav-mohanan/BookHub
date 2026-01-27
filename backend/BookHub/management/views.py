@@ -4,10 +4,11 @@ from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 from authentication.models import CustomUser
 from transactions.models import BorrowTransaction
 from .serializers import (StaffDisplaySerializer,TransactionStatusSerializer,
-                          TransactionDetailSerializer)
+                          TransactionDetailSerializer,UserDisplaySerializer)
 from .permissions import IsAdmin
 from .services import update_transaction_status
 
@@ -73,3 +74,42 @@ class AdminTransactionUpdateView(APIView):
             return Response({"error":str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class UserManagementView(APIView):
+
+    permission_classes = [IsAdmin]
+
+    def get(self,request):
+        status_filter = request.query_params.get('status_filter','all')
+        search = request.query_params.get('search','')
+
+        users = CustomUser.objects.filter(role='user').order_by('-date_joined')
+
+        if status_filter != 'all':
+            users = users.filter(is_active=(status_filter == 'active'))
+
+        if search:
+            users = users.filter(
+                Q(first_name__icontains=search) | 
+                Q(last_name__icontains=search) |
+                Q(email__icontains=search)
+                )
+        paginator = PageNumberPagination()
+        page = paginator.paginate_queryset(users,request)
+        serializer = UserDisplaySerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+    
+    def post(self,request):
+        user_id = request.data.get('user_id')
+
+        if not user_id:
+            return Response({"error":"user_id is required"},status=status.HTTP_400_BAD_REQUEST)
+        
+        user = get_object_or_404(CustomUser, user_id=user_id)
+        
+        user.is_active = not user.is_active
+        user.save(update_fields=['is_active'])
+
+        return Response(
+            {"message": "user status updated successfully","is_active":user.is_active},
+            status=status.HTTP_200_OK
+        )

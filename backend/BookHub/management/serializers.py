@@ -10,6 +10,11 @@ class StaffDisplaySerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ['user_id', 'first_name', 'last_name', 'email', 
                   'role', 'is_verified']
+        
+class UserDisplaySerializer(serializers.ModelSerializer):  
+    class Meta:
+        model = CustomUser
+        fields = ['user_id', 'first_name', 'last_name', 'email', 'is_active']
 
 
 class TransactionDetailSerializer(serializers.ModelSerializer):

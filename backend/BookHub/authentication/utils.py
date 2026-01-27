@@ -38,7 +38,7 @@ def set_auth_cookie(response,tokens):
         httponly=True,
         secure=False,
         samesite='Lax',
-        max_age=15*60
+        max_age=1* 24 * 60 * 60
     )
     
     return response

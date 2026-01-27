@@ -73,6 +73,11 @@ class AdminBookDetailView(APIView):
     permission_classes = [IsAdmin]
     parser_classes = [MultiPartParser, FormParser]
 
+    def get(self,request,slug):
+        book = get_object_or_404(Book,slug=slug)
+        serializer = BookManagementSerializer(book)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+        
     def put(self,request,slug):
         book = get_object_or_404(Book,slug=slug)
         serializer = BookManagementSerializer(book, data=request.data, partial=True)
