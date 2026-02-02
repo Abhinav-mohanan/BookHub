@@ -3,17 +3,27 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 from management.permissions import IsAdmin
-from .models import Book,Category
-from .serializers import CategoryManagementSerializer,BookManagementSerializer
+from .models import Book, Category
+from .serializers import (CategoryManagementSerializer, BookManagementSerializer,
+                          PublicBookListSerializer)
 
 
 class AdminCategoryListView(APIView):
     permission_classes = [IsAdmin]
 
     def get(self,request):
-        categories = Category.objects.filter(is_delete=False)
+        status = request.query_params.get('status')
+        categories = Category.objects.all().order_by('created_at')
+        
+        if status == 'listed':
+            categories = categories.filter(is_delete=False)
+        elif status == 'unlisted':
+            categories = categories.filter(is_delete=True)
+
         paginator = PageNumberPagination()
         page = paginator.paginate_queryset(categories,request)
         serializer = CategoryManagementSerializer(page,many=True)
@@ -54,7 +64,16 @@ class AdminBookListCreateView(APIView):
     parser_classes = [MultiPartParser, FormParser]
 
     def get(self,request):
-        books = Book.objects.filter(is_delete=False).prefetch_related('images')
+        status = request.query_params.get('status')
+        search = request.query_params.get('search')
+        books = Book.objects.all().prefetch_related('images')
+        if status == 'listed':
+            books = books.filter(is_delete=False)
+        elif status == 'unlisted':
+            books = books.filter(is_delete=True)
+        if search:
+            books = books.filter(Q(title__icontains=search)|
+                         Q(author__icontains=search))
         paginator = PageNumberPagination()
         page = paginator.paginate_queryset(books,request)
         serializer = BookManagementSerializer(page, many=True)
@@ -62,7 +81,6 @@ class AdminBookListCreateView(APIView):
     
     def post(self,request):
         serializer = BookManagementSerializer(data=request.data)
-        print(request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data,status=status.HTTP_201_CREATED)
@@ -73,6 +91,11 @@ class AdminBookDetailView(APIView):
     permission_classes = [IsAdmin]
     parser_classes = [MultiPartParser, FormParser]
 
+    def get(self,request,slug):
+        book = get_object_or_404(Book,slug=slug)
+        serializer = BookManagementSerializer(book)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+        
     def put(self,request,slug):
         book = get_object_or_404(Book,slug=slug)
         serializer = BookManagementSerializer(book, data=request.data, partial=True)
@@ -92,4 +115,14 @@ class AdminBookDetailView(APIView):
             {"message":f"Book {status_msg} Successfully","is_active": not book.is_delete},
             status=status.HTTP_200_OK
         )
+
+class PublicBookView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self,request):
+        books = Book.objects.filter(is_delete=False
+                                    ).order_by('-updated_at').prefetch_related('images')
+        paginator = PageNumberPagination()
+        page = paginator.paginate_queryset(books,request)
+        serializer = PublicBookListSerializer(page,many=True)
+        return paginator.get_paginated_response(serializer.data)
     

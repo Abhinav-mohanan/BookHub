@@ -4,10 +4,11 @@ from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
+from django.db.models import Q, Count
 from authentication.models import CustomUser
 from transactions.models import BorrowTransaction
 from .serializers import (StaffDisplaySerializer,TransactionStatusSerializer,
-                          TransactionDetailSerializer)
+                          TransactionDetailSerializer,UserDisplaySerializer)
 from .permissions import IsAdmin
 from .services import update_transaction_status
 
@@ -51,11 +52,23 @@ class AdminTransactionUpdateView(APIView):
     permission_classes = [IsAdmin]
 
     def get(self,request):
-        transactions = BorrowTransaction.objects.select_related('book','user').all().order_by('-request_at')
+        status = request.query_params.get('status','all')
+        transactions = BorrowTransaction.objects.select_related('book','user'
+                                                                ).all().order_by('-request_date')
+        stats = transactions.aggregate(
+            total=Count('id'),
+            pending=Count('id', filter=Q(status='pending')),
+            approved=Count('id', filter=Q(status='approved')),
+            returned=Count('id', filter=Q(status='returned'))
+        )
+        if status != 'all':
+            transactions = transactions.filter(status=status)
+        
         paginator = PageNumberPagination()
         page = paginator.paginate_queryset(transactions,request)
         serializer = TransactionDetailSerializer(page,many=True)
-        return Response(serializer.data,status=status.HTTP_200_OK)
+        return paginator.get_paginated_response({"results":serializer.data,
+                                                 "stats":stats})
 
     def patch(self,request,transaction_id):
         input_serializer = TransactionStatusSerializer(data=request.data)
@@ -72,4 +85,59 @@ class AdminTransactionUpdateView(APIView):
         except ValidationError as e:
             return Response({"error":str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+
+class UserManagementView(APIView):
+
+    permission_classes = [IsAdmin]
+
+    def get(self,request):
+        status_filter = request.query_params.get('status_filter','all')
+        search = request.query_params.get('search','')
+
+        users = CustomUser.objects.filter(role='user').order_by('-date_joined')
+
+        if status_filter != 'all':
+            users = users.filter(is_active=(status_filter == 'active'))
+
+        if search:
+            users = users.filter(
+                Q(first_name__icontains=search) | 
+                Q(last_name__icontains=search) |
+                Q(email__icontains=search)
+                )
+        paginator = PageNumberPagination()
+        page = paginator.paginate_queryset(users,request)
+        serializer = UserDisplaySerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+    
+    def post(self,request):
+        user_id = request.data.get('user_id')
+
+        if not user_id:
+            return Response({"error":"user_id is required"},status=status.HTTP_400_BAD_REQUEST)
+        
+        user = get_object_or_404(CustomUser, user_id=user_id)
+        
+        user.is_active = not user.is_active
+        user.save(update_fields=['is_active'])
+
+        return Response(
+            {"message": "user status updated successfully","is_active":user.is_active},
+            status=status.HTTP_200_OK
+        )
+
+
+class UserBorrowSummaryView(APIView):
+    permission_classes = [IsAdmin]
+    def get(self, request):
+        user_id = request.query_params.get('user_id')
+        approved_count = BorrowTransaction.objects.filter(
+            user_id=user_id,
+            status='approved'
+        ).count()
+        print(user_id,approved_count)
+        return Response(
+            {"approved_books_count": approved_count},
+            status=status.HTTP_200_OK
+        )
 
