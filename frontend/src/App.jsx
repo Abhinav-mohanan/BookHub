@@ -10,6 +10,10 @@ import AdminVerificationPage from "./pages/admin/AdminVerificationPage"
 import BookListPage from "./pages/admin/BookListPage"
 import EditBookPage from "./pages/admin/EditBookPage"
 import CategoryManagementPage from "./pages/admin/CategoryManagementPage"
+import UserDashboard from "./pages/user/UserDashboard"
+import MyTransactions from "./pages/user/MyTransactions"
+import ProfilePage from "./pages/user/ProfilePage"
+import BorrowTransactions from "./pages/admin/BorrowTransactions"
 
 function App() {
 
@@ -28,6 +32,10 @@ function App() {
         <Route path="/admin/books/edit/:slug" element={<EditBookPage />}  />
         <Route path="/admin/user/management" element={<UserManagementPage />}  />
         <Route path="/admin/staff/management" element={<AdminVerificationPage />}  />
+        <Route path="/admin/transactions" element={<BorrowTransactions />}  />
+        <Route path="/user/dashboard" element={<UserDashboard />}  />
+        <Route path="/user/transactions" element={<MyTransactions />}  />
+        <Route path="/user/profile" element={<ProfilePage />}  />
 
       </Routes>
     </div>

@@ -16,6 +16,13 @@ export const ToggleUserStatusApi = async (userId) => {
   return response.data
 };
 
+export const BorrowSummaryApi = async (userId) => {
+  const response = await axiosInstance.get('borrow-summary/',{
+    params:{ user_id: userId }
+  });
+  return response.data
+};
+
 export const GetPendingAdminsApi = async (page) => {
   const response = await axiosInstance.get('/admin/staff/management/',{
     params:{

@@ -6,7 +6,7 @@ const formatDate = (isoString) => {
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: '2-digit',
-    year: '2-digit',
+    year:'numeric'
   })
     .format(new Date(isoString))
     .replace(',', '')

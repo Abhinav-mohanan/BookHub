@@ -30,7 +30,7 @@ const ImageUpload = ({ images, onUpload, onRemove }) => {
             <div key={index} className="relative group aspect-[3/4] rounded-lg overflow-hidden border border-gray-300">
               <div
                 className="bg-center bg-cover h-full w-full"
-                style={{ backgroundImage: `url(${image})` }}
+                style={{ backgroundImage: `url(${image.url})` }}
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <button

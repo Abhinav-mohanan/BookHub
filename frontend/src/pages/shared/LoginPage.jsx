@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import AuthFormContainer from '../../compoenents/shared/AuthFormContainer ';
+import AuthFormContainer from '../../compoenents/shared/AuthFormContainer';
 import FormInput from '../../compoenents/shared/FormInput';
 import { ColumnsSettings, Lock, Mail } from 'lucide-react';
 import SubmitButton from '../../compoenents/shared/SubmitButton';

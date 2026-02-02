@@ -1,4 +1,4 @@
-import { Book, BookOpen, Edit, UserCircle, Users, X } from 'lucide-react';
+import { ArrowLeftRight, Book, BookOpen, Edit, UserCircle, Users, X } from 'lucide-react';
 import React from 'react'
 
 const Sidebar = ({ isOpen, onClose, activeItem = 'profile' }) => {
@@ -7,7 +7,8 @@ const Sidebar = ({ isOpen, onClose, activeItem = 'profile' }) => {
     { id: 'category', label: 'Category', icon: Edit, href: '/admin/category' },
     { id: 'books', label: 'Books', icon: Book, href: '/admin/books' },
     { id: 'users', label: 'Users', icon: Users, href: '/admin/user/management' },
-    { id: 'staffs', label: 'Staffs', icon: UserCircle, href: '/admin/staff/management' },
+    { id: 'staffs', label: 'Staff Approvals', icon: UserCircle, href: '/admin/staff/management' },
+    { id: 'transaction', label: 'Transactions', icon: ArrowLeftRight, href: '/admin/transactions' },
   ];
 
   return (

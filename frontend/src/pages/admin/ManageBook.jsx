@@ -9,8 +9,11 @@ import { handleApiError } from '../../compoenents/shared/ErrorHandler';
 import { AdminBookCreateApi, AdminBookUpdateApi, GetCategoriesApi } from '../../Api/BookManagementApi';
 import FormInput from '../../compoenents/shared/FormInput';
 import SelectDropdown from '../../compoenents/shared/SelectDropdown';
+import { useNavigate } from 'react-router-dom';
+
 
 const ManageBook = ({ isEdit = false, initialData = null }) => {
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     title: '',
     author: '',
@@ -21,23 +24,35 @@ const ManageBook = ({ isEdit = false, initialData = null }) => {
   });
   const [errors,setErrors] = useState({})
   const [isLoading, setIsLoading] = useState(false)
-
   const [images, setImages] = useState([]);
   const [categories,setcategories] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
+  const [initialFormData, setInitialFormData] = useState(null)
+  const [initialImages, setInitialImages] = useState([])
+  const [hasChanges, setHasChanges] = useState(false);
+  const [deletedImageIds, setDeletedImageIds] = useState([]);
 
   useEffect(() => {
     if (isEdit && initialData) {
-      setFormData({
+      const data = {
         title: initialData.title,
         author: initialData.author,
         category: initialData.category,
         description: initialData.description,
         quantity: initialData.quantity,
         available_quantity: initialData.available_quantity,
-      });
+      };
+      setFormData(data)
+      setInitialFormData(data)
       if (initialData.images) {
-        setImagePreviews(initialData.images.map(img => img.image_url));
+        const imgs = initialData.images.map(img => ({
+          id:img.id,
+          url:img.image_url,
+          isNew:false
+
+        }));
+        setImagePreviews(imgs)
+        setInitialImages(imgs)
       }
     }
   }, [isEdit, initialData]);
@@ -86,17 +101,42 @@ const ManageBook = ({ isEdit = false, initialData = null }) => {
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-    setImages(prev=>[...prev,...files])
     
-    const previews = files.map(file =>URL.createObjectURL(file));
+    const previews = files.map(file =>({
+      file,
+      url:URL.createObjectURL(file),
+      isNew:true
+    }));
+    setImages(prev=>[...prev,...files])
     setImagePreviews(prev=>[...prev,...previews])
   };
 
   const handleImageRemove = (index) => {
-    setImages(prev => prev.filter((_, i)=> i !== index));
+    const image = imagePreviews[index]
+    if (!image.isNew && image.id){
+      setDeletedImageIds(prev=>[...prev,image.id])
+    }
       setImagePreviews(prev => prev.filter((_, i) => i !== index));
-
   };
+
+  const isChanged = () =>{
+    if (!isEdit) return true
+    if (!initialFormData) return false
+    
+    const fromChanged = Object.keys(initialFormData).some(
+      key => String(initialFormData[key]) !== String(formData[key])
+    )
+
+    const imagesChanged = imagePreviews.length !== initialImages.length ||
+    imagePreviews.some((img,i) => img.id !== initialImages[i]?.id || img.isNew)
+
+    return fromChanged || imagesChanged
+    
+  }
+
+  useEffect(()=>{
+    setHasChanges(isChanged())
+  },[formData,imagePreviews])
 
   const handlePublish = async() => {
     setIsLoading(true)
@@ -112,6 +152,11 @@ const ManageBook = ({ isEdit = false, initialData = null }) => {
       images.forEach((file)=> {
         data.append('uploaded_images',file)
       })
+
+      deletedImageIds.forEach(id => {
+        data.append('deleted_images', id);
+      });
+
       if (isEdit){
       await AdminBookUpdateApi(initialData.slug, data)
       toast.success("Book updated")
@@ -120,6 +165,7 @@ const ManageBook = ({ isEdit = false, initialData = null }) => {
       toast.success("Book published successfully")
       resetForm()
     }
+    navigate(-1)
     }catch(error){
       handleApiError(error,setErrors)
     }finally{
@@ -128,12 +174,25 @@ const ManageBook = ({ isEdit = false, initialData = null }) => {
   };
 
   const handleDiscard = () => {
-    resetForm()
-    }
+  if (isEdit && initialFormData) {
+    setFormData(initialFormData);
+    setImagePreviews(initialImages);
+    setImages([]);
+    setErrors({});
+  } else {
+    resetForm();
+  }
+};
 
   useEffect(() => {
-      return () => imagePreviews.forEach(URL.revokeObjectURL);
-  }, []);
+      return () =>{
+        imagePreviews.forEach(img=>{
+          if (img.isNew){
+            URL.revokeObjectURL(img.url)
+          }
+        })
+      }
+  }, [imagePreviews]);
 
 
   const breadcrumbItems = [
@@ -149,10 +208,13 @@ const ManageBook = ({ isEdit = false, initialData = null }) => {
           title={isEdit?"Edit book":"Add New Book"}
           description="Populate the fields below to register a new title in the digital catalog."
           actions={
+            hasChanges&&(
             <>
               <button
                 onClick={handleDiscard}
-                className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-900 font-semibold text-sm hover:bg-gray-50 transition-all"
+                disabled={isLoading}
+                className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-900 font-semibold 
+                text-sm hover:bg-gray-50 cursor-pointer disabled:cursor-not-allowed transition-all"
               >
                 Discard
               </button>
@@ -166,6 +228,7 @@ const ManageBook = ({ isEdit = false, initialData = null }) => {
                 {isEdit ?"Save Book" :"Publish to Catalog"}
               </button>
             </>
+            )
           }
         />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -213,9 +276,29 @@ const ManageBook = ({ isEdit = false, initialData = null }) => {
                   onChange={handleChange}
                   placeholder="Provide a brief summary of the book..."
                 />
+                <div className='flex justify-between'>
+                 <FormInput
+                  label='Quantity'
+                  name='quantity'
+                  type='number'
+                  value={formData.quantity}
+                  onChange={handleChange}
+                  error={errors.quantity?.[0]}
+                 />
+
+                 <FormInput
+                  label='Available Quantity'
+                  name='available_quantity'
+                  type='number'
+                  value={formData.available_quantity}
+                  onChange={handleChange}
+                  error={errors.available_quantity?.[0]}
+                  />
+                  </div>
               </div>
             </div>
           </div>
+
 
           {/* Sidebar */}
           <div className="space-y-6">
@@ -223,24 +306,6 @@ const ManageBook = ({ isEdit = false, initialData = null }) => {
               images={imagePreviews}
               onUpload={handleImageUpload}
               onRemove={handleImageRemove}
-            />
-
-            <FormInput
-            label='Quantity'
-            name='quantity'
-            type='number'
-            value={formData.quantity}
-            onChange={handleChange}
-            error={errors.quantity?.[0]}
-            />
-
-            <FormInput
-            label='Available Quantity'
-            name='available_quantity'
-            type='number'
-            value={formData.available_quantity}
-            onChange={handleChange}
-            error={errors.available_quantity?.[0]}
             />
           </div>
         </div>

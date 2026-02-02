@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import VerificationTable from '../../compoenents/admin/VerificationTable';
 import AdminLayout from '../../compoenents/admin/AdminLayout';
 import { GetPendingAdminsApi, VerifyAdminApi } from '../../Api/AdminManagementApi';
-import { data } from 'react-router-dom';
 
 const AdminVerificationPage = () => {
   const [pendingAdmins, setPendingAdmins] = useState([]);

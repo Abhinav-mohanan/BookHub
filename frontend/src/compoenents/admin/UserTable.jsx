@@ -68,7 +68,7 @@ return (
                 <td className="px-6 py-4 text-right">
                   <button
                     onClick={() => onActionClick(user)}
-                    className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
+                    className={`px-3 py-1.5 rounded-md cursor-pointer text-xs font-bold transition-all ${
                       user.is_active 
                       ? 'bg-red-50 text-red-600 hover:bg-red-100' 
                       : 'bg-green-50 text-green-600 hover:bg-green-100'

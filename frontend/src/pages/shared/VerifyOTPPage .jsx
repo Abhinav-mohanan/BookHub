@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import {  useLocation, useNavigate } from 'react-router-dom';
-import AuthFormContainer from '../../compoenents/shared/AuthFormContainer ';
+import AuthFormContainer from '../../compoenents/shared/AuthFormContainer';
 import FormInput from '../../compoenents/shared/FormInput';
 import SubmitButton from '../../compoenents/shared/SubmitButton';
 import { toast } from 'react-toastify';

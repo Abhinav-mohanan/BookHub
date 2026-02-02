@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Lock, Mail } from 'lucide-react'
 import { SignupApi } from '../../Api/AuthenticationApi';
-import AuthFormContainer from '../../compoenents/shared/AuthFormContainer ';
+import AuthFormContainer from '../../compoenents/shared/AuthFormContainer';
 import FormInput from '../../compoenents/shared/FormInput';
 import RadioGroup from '../../compoenents/shared/RadioGroup';
 import SubmitButton from '../../compoenents/shared/SubmitButton';
