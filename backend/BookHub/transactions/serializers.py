@@ -16,6 +16,9 @@ class BorrowRequestSerializer(serializers.ModelSerializer):
         if book.available_quantity < 1:
             raise ValidationError({"error":"This book is currently out of stock."})
         
+        if book.is_delete:
+            raise ValidationError({"error":"The book is currently unavailable"})
+        
         if BorrowTransaction.objects.filter(
             user=user,
             book=book,
@@ -46,6 +49,6 @@ class ListTransactionsSerializer(serializers.ModelSerializer):
     class Meta:
         model = BorrowTransaction
         fields = ['id','user_name','book_title','status',
-                  'request_date','approval_date','returne_date']
+                  'request_date','approval_date','return_date']
 
     

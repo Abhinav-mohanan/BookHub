@@ -6,9 +6,8 @@ from django.utils import timezone
 def update_transaction_status(transaction_id, new_status):
 
     ALLOWED_TRANSITIONS = {
-        'pending': ['approved','rejected'],
+        'pending': ['approved'],
         'approved': ['returned'],
-        'rejected': [],
         'returned':[]
     }
     try:

@@ -20,10 +20,15 @@ class UserDisplaySerializer(serializers.ModelSerializer):
 class TransactionDetailSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source='user.get_full_name')
     book_title = serializers.CharField(source='book.title')
+    book_image = serializers.SerializerMethodField()
 
     class Meta:
         model =  BorrowTransaction
-        fields = ['id', 'user_name', 'book_title', 'status', 'request_date', 'return_date','approval_date']
+        fields = ['id', 'user_name', 'book_title', 'status', 'request_date', 'return_date','approval_date', 'book_image']
+    
+    def get_book_image(self,obj):
+        image = obj.book.images.first()
+        return image.image.url if image else None
 
 
 class TransactionStatusSerializer(serializers.ModelSerializer):

@@ -44,10 +44,17 @@ class BookManagementSerializer(serializers.ModelSerializer):
                                     write_only=True, required=False
     )
 
+    deleted_images = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True,
+        required=False
+    )
+
+
     class Meta:
         model = Book
         fields = ['book_id','title','author','category','quantity','slug','category_name',
-                  'available_quantity','description','is_delete','uploaded_images','images']
+                  'available_quantity','description','is_delete','uploaded_images','images','deleted_images']
         read_only_fields = ['slug','book_id','is_delete',]
 
     def get_category_name(self,obj):
@@ -87,13 +94,33 @@ class BookManagementSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         uploaded_images = validated_data.pop('uploaded_images', [])
+        deleted_images = validated_data.pop('deleted_images', [])
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
 
+        if deleted_images:
+            BookImage.objects.filter(id__in=deleted_images,book=instance
+                                     ).delete()
+
         for image in uploaded_images:
             BookImage.objects.create(book=instance, image=image)
 
         return instance
+
+
+class PublicBookListSerializer(serializers.ModelSerializer):
+    images = BookImageSerializer(many=True,read_only=True)
+    category_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Book
+        fields = ['images', 'title', 'available_quantity', 'author', 
+                  'category_name', 'slug']
+        read_only_fields = ['slug']
     
+    def get_category_name(self,obj):
+        if obj.category:
+            return obj.category.category_name
+        return None

@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
-from django.db.models import Q
+from django.db.models import Q, Count
 from authentication.models import CustomUser
 from transactions.models import BorrowTransaction
 from .serializers import (StaffDisplaySerializer,TransactionStatusSerializer,
@@ -52,11 +52,23 @@ class AdminTransactionUpdateView(APIView):
     permission_classes = [IsAdmin]
 
     def get(self,request):
-        transactions = BorrowTransaction.objects.select_related('book','user').all().order_by('-request_at')
+        status = request.query_params.get('status','all')
+        transactions = BorrowTransaction.objects.select_related('book','user'
+                                                                ).all().order_by('-request_date')
+        stats = transactions.aggregate(
+            total=Count('id'),
+            pending=Count('id', filter=Q(status='pending')),
+            approved=Count('id', filter=Q(status='approved')),
+            returned=Count('id', filter=Q(status='returned'))
+        )
+        if status != 'all':
+            transactions = transactions.filter(status=status)
+        
         paginator = PageNumberPagination()
         page = paginator.paginate_queryset(transactions,request)
         serializer = TransactionDetailSerializer(page,many=True)
-        return Response(serializer.data,status=status.HTTP_200_OK)
+        return paginator.get_paginated_response({"results":serializer.data,
+                                                 "stats":stats})
 
     def patch(self,request,transaction_id):
         input_serializer = TransactionStatusSerializer(data=request.data)
@@ -113,3 +125,19 @@ class UserManagementView(APIView):
             {"message": "user status updated successfully","is_active":user.is_active},
             status=status.HTTP_200_OK
         )
+
+
+class UserBorrowSummaryView(APIView):
+    permission_classes = [IsAdmin]
+    def get(self, request):
+        user_id = request.query_params.get('user_id')
+        approved_count = BorrowTransaction.objects.filter(
+            user_id=user_id,
+            status='approved'
+        ).count()
+        print(user_id,approved_count)
+        return Response(
+            {"approved_books_count": approved_count},
+            status=status.HTTP_200_OK
+        )
+
