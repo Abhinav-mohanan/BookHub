@@ -116,7 +116,7 @@ class PublicBookListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Book
-        fields = ['images', 'title', 'available_quantity', 'author', 
+        fields = ['images', 'title', 'available_quantity','description', 'author', 
                   'category_name', 'slug']
         read_only_fields = ['slug']
     
@@ -124,3 +124,9 @@ class PublicBookListSerializer(serializers.ModelSerializer):
         if obj.category:
             return obj.category.category_name
         return None
+
+
+class CategoriesListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id','category_name']

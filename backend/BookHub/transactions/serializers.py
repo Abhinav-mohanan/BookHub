@@ -19,6 +19,9 @@ class BorrowRequestSerializer(serializers.ModelSerializer):
         if book.is_delete:
             raise ValidationError({"error":"The book is currently unavailable"})
         
+        if book.category.is_delete:
+            raise ValidationError({"error":"The book is currently unavailable"})
+        
         if BorrowTransaction.objects.filter(
             user=user,
             book=book,

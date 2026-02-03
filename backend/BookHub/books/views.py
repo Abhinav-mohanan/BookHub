@@ -9,7 +9,7 @@ from django.db.models import Q
 from management.permissions import IsAdmin
 from .models import Book, Category
 from .serializers import (CategoryManagementSerializer, BookManagementSerializer,
-                          PublicBookListSerializer)
+                          PublicBookListSerializer,CategoriesListSerializer)
 
 
 class AdminCategoryListView(APIView):
@@ -119,10 +119,27 @@ class AdminBookDetailView(APIView):
 class PublicBookView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self,request):
-        books = Book.objects.filter(is_delete=False
-                                    ).order_by('-updated_at').prefetch_related('images')
+        search = request.query_params.get('search')
+        category = request.query_params.get('category')
+        books = Book.objects.filter(is_delete=False,category__is_delete=False
+                                    ).order_by('-created_at').prefetch_related('images','category')
+        if category:
+            books = books.filter(category=category)
+        if search:
+            books = books.filter(
+                Q(title__icontains=search) |
+                Q(author__icontains=search)
+            )
         paginator = PageNumberPagination()
         page = paginator.paginate_queryset(books,request)
         serializer = PublicBookListSerializer(page,many=True)
         return paginator.get_paginated_response(serializer.data)
+
+class CategoriesListView(APIView):
+    def get(self,request):
+        categories = Category.objects.filter(is_delete=False
+                                         ).order_by('created_at')
+        serializer = CategoriesListSerializer(categories,many=True)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+        
     
