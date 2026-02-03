@@ -45,14 +45,17 @@ const MyTransactions = () => {
   const [transactions, setTransactions] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [stats, setStats] = useState({})
   const [loading, setLoading] = useState(false);
   const pageSize = 6;
 
-  const fetchTransactions = async (page) => {
+  const fetchTransactions = async (page=currentPage, status=statusFilter) => {
     try {
       setLoading(true);
-      const data = await GetMyTransactionsApi(page);
-      setTransactions(data.results);
+      const data = await GetMyTransactionsApi(page,status);
+      setTransactions(data.results?.results);
+      setStats(data.results?.stats)
       setTotalItems(data.count);
     } catch (error) {
       console.error(error);
@@ -63,19 +66,12 @@ const MyTransactions = () => {
 
   useEffect(() => {
     fetchTransactions(currentPage);
-  }, [currentPage]);
+  }, [currentPage,statusFilter]);
 
-  const getStatusStats = () => {
-    const stats = {
-      total: transactions.length,
-      pending: transactions.filter(t => t.status === 'pending').length,
-      approved: transactions.filter(t => t.status === 'approved').length,
-      returned: transactions.filter(t => t.status === 'returned').length,
-    };
-    return stats;
-  };
-
-  const stats = getStatusStats();
+  const handleFilterChange = (status) =>{
+    setCurrentPage(1)
+    setStatusFilter(status)
+  }
 
   if (loading) {
     return (
@@ -101,20 +97,22 @@ const MyTransactions = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 ">
+        <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200 cursor-pointer"
+        onClick={()=>handleFilterChange('all')}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm font-medium">Total</p>
-              <p className="text-3xl font-bold text-gray-800 mt-1">{totalItems}</p>
+              <p className="text-3xl font-bold text-gray-800 mt-1">{stats.total}</p>
             </div>
             <div className="bg-gray-100 rounded-full p-3">
               <FileText className="w-6 h-6 text-gray-600" />
             </div>
           </div>
         </div>
-
-        <div className="bg-white rounded-xl p-6 shadow-md border border-yellow-200">
+      
+        <div className="bg-white rounded-xl p-6 shadow-md border border-yellow-200 cursor-pointer"
+        onClick={()=>handleFilterChange('pending')}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-yellow-600 text-sm font-medium">Pending</p>
@@ -125,8 +123,9 @@ const MyTransactions = () => {
             </div>
           </div>
         </div>
-
-        <div className="bg-white rounded-xl p-6 shadow-md border border-green-200">
+      
+        <div className="bg-white rounded-xl p-6 shadow-md border border-green-200 cursor-pointer"
+        onClick={()=>handleFilterChange('approved')}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-green-600 text-sm font-medium">Approved</p>
@@ -137,8 +136,9 @@ const MyTransactions = () => {
             </div>
           </div>
         </div>
-
-        <div className="bg-white rounded-xl p-6 shadow-md border border-blue-200">
+      
+        <div className="bg-white rounded-xl p-6 shadow-md border border-blue-200 cursor-pointer"
+        onClick={()=>handleFilterChange('returned')}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-blue-600 text-sm font-medium">Returned</p>
@@ -150,7 +150,6 @@ const MyTransactions = () => {
           </div>
         </div>
       </div>
-
       <div className="bg-white rounded-xl shadow-md overflow-hidden">
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full">

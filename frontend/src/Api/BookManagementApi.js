@@ -18,10 +18,14 @@ export const AdminBookListApi = async(page,status,search) =>{
     return response.data
 }
 
-export const PublicBookListApi = async(page) =>{
+export const PublicBookListApi = async(page,search,category) =>{
     const response = await axiosInstance.get('books/',{
-        params:{page}
+        params:{page,search,category}
     })
+    return response.data
+}
+export const GetAllCategoriesApi = async() =>{
+    const response = await axiosInstance.get('categories/')
     return response.data
 }
 
@@ -42,8 +46,10 @@ export const BorrowBookApi = async(slug) =>{
     const response = await axiosInstance.post(`books/${slug}/borrow/`)
     return response.data
 }
-export const GetMyTransactionsApi = async() =>{
-    const response = await axiosInstance.get('transactions/')
+export const GetMyTransactionsApi = async(page,status) =>{
+    const response = await axiosInstance.get('transactions/',{
+        params:{page,status}
+    })
     return response.data
 }
 export const GetAllTransactionsApi = async(page,status) =>{

@@ -22,13 +22,6 @@ const statusConfig = {
     icon: CheckCircle,
     label: 'Approved'
   },
-  rejected: {
-    bg: 'bg-rose-50',
-    text: 'text-rose-700',
-    border: 'border-rose-200',
-    icon: XCircle,
-    label: 'Rejected'
-  },
   returned: {
     bg: 'bg-slate-50',
     text: 'text-slate-700',
@@ -307,7 +300,6 @@ const BorrowTransactions = () => {
                                 >
                                   <option value="pending">Pending</option>
                                   <option value="approved">Approved</option>
-                                  <option value="rejected">Rejected</option>
                                   <option value="returned">Returned</option>
                                 </select>
                                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">

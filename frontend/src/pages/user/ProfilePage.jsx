@@ -3,14 +3,7 @@ import { toast } from 'react-toastify';
 import { getProfileApi, updateProfileApi } from '../../Api/AuthenticationApi';
 import FormInput from '../../compoenents/shared/FormInput';
 import Layout from '../../compoenents/user/Layout';
-import { 
-  User, 
-  Mail, 
-  Calendar, 
-  Save, 
-  Loader2,
-  Edit3
-} from 'lucide-react';
+import { User, Mail, Calendar, Save, Loader2,Edit3 } from 'lucide-react';
 import { handleApiError } from '../../compoenents/shared/ErrorHandler';
 
 const ProfilePage = () => {
@@ -24,12 +17,14 @@ const ProfilePage = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
+  const [initialData, setInitialData] = useState({})
 
   const fetchProfile = async () => {
     try {
       setPageLoading(true);
       const data = await getProfileApi();
       setFormData(data);
+      setInitialData(data)
     } catch {
       handleApiError(errors,setErrors)
     } finally {
@@ -70,6 +65,15 @@ const ProfilePage = () => {
       setLoading(false);
     }
   };
+
+  const handleCancel = () =>{
+    setFormData(initialData)
+    toast.info("Changes Cancelled")
+  }
+
+  const isChanged = initialData && 
+  (formData.first_name !== initialData.first_name) ||
+  (formData.last_name !== initialData.last_name)
 
   if (pageLoading) {
     return (
@@ -222,6 +226,7 @@ const ProfilePage = () => {
                 />
               </div>
 
+              {isChanged&&(
               <div className="flex gap-3 pt-4 border-t border-gray-200">
                 <button
                   type="submit"
@@ -244,7 +249,7 @@ const ProfilePage = () => {
                 
                 <button
                   type="button"
-                  onClick={fetchProfile}
+                  onClick={handleCancel}
                   disabled={loading}
                   className="px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg
                     hover:bg-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -252,6 +257,7 @@ const ProfilePage = () => {
                   Cancel
                 </button>
               </div>
+              )}
             </form>
           </div>
         </div>

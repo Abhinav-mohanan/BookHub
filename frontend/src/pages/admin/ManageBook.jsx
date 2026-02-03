@@ -6,7 +6,7 @@ import { Book, Save, User } from 'lucide-react';
 import FormTextarea from '../../compoenents/admin/FormTextArea';
 import { toast } from 'react-toastify';
 import { handleApiError } from '../../compoenents/shared/ErrorHandler';
-import { AdminBookCreateApi, AdminBookUpdateApi, GetCategoriesApi } from '../../Api/BookManagementApi';
+import { AdminBookCreateApi, AdminBookUpdateApi, GetAllCategoriesApi, GetCategoriesApi } from '../../Api/BookManagementApi';
 import FormInput from '../../compoenents/shared/FormInput';
 import SelectDropdown from '../../compoenents/shared/SelectDropdown';
 import { useNavigate } from 'react-router-dom';
@@ -88,8 +88,8 @@ const ManageBook = ({ isEdit = false, initialData = null }) => {
 
   const getCategories = async() =>{
     try{
-      const data = await GetCategoriesApi()
-      setcategories(data.results)
+      const data = await GetAllCategoriesApi()
+      setcategories(data)
     }catch(error){
       handleApiError(error,setErrors)
     }
