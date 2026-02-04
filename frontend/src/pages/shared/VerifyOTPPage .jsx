@@ -1,25 +1,49 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {  useLocation, useNavigate } from 'react-router-dom';
 import AuthFormContainer from '../../compoenents/shared/AuthFormContainer';
 import FormInput from '../../compoenents/shared/FormInput';
 import SubmitButton from '../../compoenents/shared/SubmitButton';
 import { toast } from 'react-toastify';
 import { KeyRound, Mail } from 'lucide-react';
-import { VerifyOTPApi } from '../../Api/AuthenticationApi';
+import { ResendOTPApi, VerifyOTPApi } from '../../Api/AuthenticationApi';
 import { handleApiError } from '../../compoenents/shared/ErrorHandler';
 
 const VerifyOTPPage = () => {
   const navigate = useNavigate()
   const location = useLocation()
+  const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     email:location?.state?.email || '',
     otp: ''
   });
+  const RESEND_INTERVAL = 60;
+  const lastResendTime = localStorage.getItem("OTP_last_send_time")
+  const getInitialSeconds = () =>{
+    if (!lastResendTime) return 0
+    const diff = Math.floor((Date.now() - parseInt(lastResendTime)) / 1000)
+    return diff < RESEND_INTERVAL ? RESEND_INTERVAL - diff : 0;
+
+  }
+  const [secondsLeft, setSecondsLeft] = useState(getInitialSeconds)
+  const [isDisabled, setIsDisabled] = useState(getInitialSeconds() > 0)
+
+
+  useEffect(()=>{
+    if (secondsLeft <= 0){
+      setIsDisabled(false)
+      return
+    }
+    const timer = setInterval(() => {
+      setSecondsLeft(prev =>prev - 1)
+    }, 1000);
+
+    return ()=> clearInterval(timer)
+  },[secondsLeft])
 
   const handleSubmit = async () => {
     try {
-      const data = VerifyOTPApi(formData)
+      const data = await VerifyOTPApi(formData)
       toast.success(data?.message)
       navigate('/',{ replace: true })
     } catch (error) {
@@ -35,13 +59,19 @@ const VerifyOTPPage = () => {
     }));
   };
 
-  const handleResendOTP = (e) =>{
+  const handleResendOTP = async(e) =>{
     e.preventDefault()
+    setIsLoading(true)
     try{
-      const data = ResendOTpApi()
+      const data = await ResendOTPApi({email:formData.email})
       toast.success(data?.message)
+      localStorage.setItem('OTP_last_send_time', Date.now())
+      setSecondsLeft(60)
+      setIsDisabled(true)
     }catch(error){
       toast.error(error?.response?.error || 'something went wrong please try again later')
+    }finally{
+      setIsLoading(false)
     }
   }
 
@@ -72,15 +102,16 @@ const VerifyOTPPage = () => {
           error={errors.otp?.[0]}
         />
 
-        <SubmitButton onClick={handleSubmit}>
+        <SubmitButton onClick={handleSubmit} loading={isLoading}>
           Verify OTP
         </SubmitButton>
 
         <button
+        disabled={isDisabled || isLoading}
         onClick={handleResendOTP}
         className='w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-sm transition-colors mt-1 
         disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer'>
-        Resend OTP
+        {isDisabled?`Resend OTP in ${secondsLeft} `:"Resend OTP"}
         </button>
       </div>
     </AuthFormContainer>

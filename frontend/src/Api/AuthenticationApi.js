@@ -26,3 +26,8 @@ export const LogoutApi = async() =>{
     const response = await axiosInstance.post('logout/')
     return response.data
 }
+
+export const ResendOTPApi = async(data) =>{
+    const response = await axiosInstance.post('otp/resend/',data)
+    return response.data
+}

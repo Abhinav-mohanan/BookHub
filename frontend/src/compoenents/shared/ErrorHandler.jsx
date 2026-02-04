@@ -1,11 +1,19 @@
 import { toast } from 'react-toastify';
 
-export const handleApiError = (error, setErrors) => {
+export const handleApiError = (error, setErrors, navigate) => {
   if (error.response && error.response.data) {
     const errorData = error.response.data;
     const newFieldErrors = {};
 
     const generalErrorKeys = ['error', 'detail', 'non_field_errors'];
+
+    if(errorData?.code === 'EMAIL_NOT_VERIFIED'){
+      navigate('/verify-otp', {
+        state:{email:errorData.email}
+      })
+      toast.error(errorData?.error)
+      return  
+    }
 
     Object.keys(errorData).forEach((key) => {
       if (generalErrorKeys.includes(key)) {

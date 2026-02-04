@@ -37,7 +37,6 @@ const LoginPage = ({ onNavigate }) => {
     try {
       setIsLoading(true)
       const data = await LoginApi(formData)
-      console.log(data)
       if (data.role === 'admin'){
         navigate('/admin/dashboard')
       }else{
@@ -45,7 +44,7 @@ const LoginPage = ({ onNavigate }) => {
       }
 
     } catch (error) {
-      handleApiError(error,setErrors) 
+      handleApiError(error,setErrors,navigate) 
       console.log(error)
     }finally{
       setIsLoading(false)
