@@ -20,6 +20,15 @@ def send_signup_otp(user):
 
     send_email_generic(subject,message,[email])
 
+def send_resend_otp(user):
+    otp_code = create_otp_for_user(user)
+
+    subject = "Welcome to BookHub - Resend OTP"
+    message = f"Hi {user.get_full_name()},\n\nYour signup verification code is: {otp_code} \n\nThank you"
+    email = user.email
+
+    send_email_generic(subject,message,[email])
+
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
 

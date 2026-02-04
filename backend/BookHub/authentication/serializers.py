@@ -107,6 +107,7 @@ class LoginSerializer(serializers.Serializer):
         if not user.is_email_verified:
             raise AuthenticationFailed({"error":"Please verify your email address first.",
                                         "is_email_verified":user.is_email_verified,
+                                        'code':"EMAIL_NOT_VERIFIED",
                                         "email":user.email})
         
         if not user.is_active:

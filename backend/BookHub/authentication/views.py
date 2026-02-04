@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404
 from .models import CustomUser
 from .serializers import (SignupSerializer,ValidateOTPSerializer,LoginSerializer,
                           ProfileSerializer)
-from .services import (send_signup_otp,get_tokens_for_user)
+from .services import (send_signup_otp, get_tokens_for_user, send_resend_otp)
 from .utils import set_auth_cookie
 import logging
 from django.views.decorators.csrf import csrf_exempt
@@ -150,3 +150,10 @@ class CustomRefreshView(APIView):
 
         return response
 
+class ResendOTPView(APIView):
+    def post(self,request):
+        email = request.data.get('email')
+        user = get_object_or_404(CustomUser, email=email)
+        send_resend_otp(user)
+        return Response({"message":"OTP resended to your email"},
+                        status=status.HTTP_200_OK)
