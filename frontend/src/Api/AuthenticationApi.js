@@ -31,3 +31,15 @@ export const ResendOTPApi = async(data) =>{
     const response = await axiosInstance.post('otp/resend/',data)
     return response.data
 }
+export const ForgotPasswordEmailAPI = async(data) =>{
+    const response = await axiosInstance.post('forgot-password/',data)
+    return response.data
+}
+export const ForgotPasswordVerifyOTPAPI = async(data) =>{
+    const response = await axiosInstance.post('forgot/password/otp/',data)
+    return response.data
+}
+export const ResetPasswordAPI = async(data) =>{
+    const response = await axiosInstance.post('reset/password/',data)
+    return response.data
+}

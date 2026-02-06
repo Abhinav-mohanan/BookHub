@@ -14,6 +14,9 @@ import UserDashboard from "./pages/user/UserDashboard"
 import MyTransactions from "./pages/user/MyTransactions"
 import ProfilePage from "./pages/user/ProfilePage"
 import BorrowTransactions from "./pages/admin/BorrowTransactions"
+import ForgotPasswordEmail from "./pages/shared/ForgotPasswordEmail"
+import ResetPassword from "./pages/shared/ResetPassword"
+import ForgotPasswordOTP from "./pages/shared/ForgotPasswordOTP"
 
 function App() {
 
@@ -36,6 +39,9 @@ function App() {
         <Route path="/user/dashboard" element={<UserDashboard />}  />
         <Route path="/user/transactions" element={<MyTransactions />}  />
         <Route path="/user/profile" element={<ProfilePage />}  />
+        <Route path="/forgot-password-email" element={<ForgotPasswordEmail />}  />
+        <Route path="/forgot-password-otp" element={<ForgotPasswordOTP />}  />
+        <Route path="/reset-password" element={<ResetPassword />}  />
 
       </Routes>
     </div>

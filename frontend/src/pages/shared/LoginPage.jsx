@@ -6,7 +6,7 @@ import SubmitButton from '../../compoenents/shared/SubmitButton';
 import FormLink from '../../compoenents/shared/FormLink';
 import { LoginApi } from '../../Api/AuthenticationApi';
 import { handleApiError } from '../../compoenents/shared/ErrorHandler';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const LoginPage = ({ onNavigate }) => {
   const navigate = useNavigate()
@@ -94,13 +94,12 @@ const LoginPage = ({ onNavigate }) => {
         />
 
         <div className="text-right">
-          <a 
-            href="#" 
-            onClick={() => onNavigate('forgot-password')}
+          <Link
+            to={'/forgot-password-email'}
             className="text-sm text-blue-600 hover:underline"
           >
             Forgot password?
-          </a>
+          </Link>
         </div>
 
         <SubmitButton onClick={handleSubmit} loading={isLoading}>
