@@ -144,4 +144,72 @@ class ProfileSerializer(serializers.ModelSerializer):
             attrs['last_name'] = last_name
 
         return attrs
+
+
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate(self,attrs):
+        email = attrs['email']
+
+        try:
+            user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            raise serializers.ValidationError({'email':'Invalid email'})
+        
+        attrs['user'] = user
+        return attrs
+
+class ForgotPasswordOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField(max_length=6)
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        otp = attrs.get('otp')
+
+        try:
+            user = CustomUser.objects.get(email=email)
+            otp_instance = OTP.objects.get(user=user)
+        except (CustomUser.DoesNotExist, OTP.DoesNotExist):
+            raise ValidationError({"email":"Invalid Email or OTP"})
+        
+        if otp_instance.otp != otp:
+            raise ValidationError({"otp":"Invalid OTP"})
+        
+        if otp_instance.is_expired():
+            otp_instance.delete()
+            raise ValidationError("OTP has expired. Please request a new one.")
+        
+        otp_instance.delete()
+        return attrs
+    
+
+class ResetPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+    confirm_password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        password = data.get('password')
+        confirm_password = data.get('confirm_password')
+        email = data.get('email')
+        if password != confirm_password:
+            raise serializers.ValidationError("Passwords do not match")
+        if len(password) < 6:
+            raise serializers.ValidationError("Password must be at least 6 characters")
+        try:
+            user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            raise serializers.ValidationError("User with this email does not exists")
+        data['user'] = user
+        return data
+    
+    def save(self):
+        user = self.validated_data['user']
+        password = self.validated_data['password']
+        user.set_password(password)        
+        user.save()
+        return user
+    
     

@@ -24,7 +24,16 @@ def send_resend_otp(user):
     otp_code = create_otp_for_user(user)
 
     subject = "Welcome to BookHub - Resend OTP"
-    message = f"Hi {user.get_full_name()},\n\nYour signup verification code is: {otp_code} \n\nThank you"
+    message = f"Hi {user.get_full_name()},\n\nYour verification code is: {otp_code} \n\nThank you"
+    email = user.email
+
+    send_email_generic(subject,message,[email])
+
+def send_reset_password_otp(user):
+    otp_code = create_otp_for_user(user)
+
+    subject = "Welcome to BookHub - Reset Password OTP"
+    message = f"Hi {user.get_full_name()},\n\nYour Reset password verification code is: {otp_code} \n\nThank you"
     email = user.email
 
     send_email_generic(subject,message,[email])
