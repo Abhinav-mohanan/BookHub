@@ -9,7 +9,7 @@ const VerificationTable = ({
   currentPage, 
   totalItems, 
   itemsPerPage, 
-  onPageChange
+  onPageChange,
 }) => {
   const getInitials = (f, l) => `${f?.[0] || ''}${l?.[0] || ''}`.toUpperCase();
 
@@ -57,7 +57,7 @@ const VerificationTable = ({
                   <td className="px-6 py-4 text-right">
                     <button
                       onClick={() => onVerify(admin.user_id)}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-all"
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold cursor-pointer rounded-lg transition-all"
                     >
                       Approve
                     </button>

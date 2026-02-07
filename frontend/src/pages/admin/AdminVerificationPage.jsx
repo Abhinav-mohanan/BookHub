@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import VerificationTable from '../../compoenents/admin/VerificationTable';
 import AdminLayout from '../../compoenents/admin/AdminLayout';
 import { GetPendingAdminsApi, VerifyAdminApi } from '../../Api/AdminManagementApi';
+import ConfirmationModal from '../../compoenents/shared/ConfirmationModal';
 
 const AdminVerificationPage = () => {
   const [pendingAdmins, setPendingAdmins] = useState([]);
@@ -9,6 +10,8 @@ const AdminVerificationPage = () => {
   
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [isModalOPen, setIsModalOpen] = useState(false)
+  const [confirmId, setConfirmId] = useState(null)
   const pageSize = 6; 
 
   const fetchRequests = async () => {
@@ -30,9 +33,12 @@ const AdminVerificationPage = () => {
   }, [currentPage]);
 
   const handleVerify = async (user_id) => {
+    if (!user_id) return
     try {
-      data = await VerifyAdminApi({user_id:user_id});
+      const data = await VerifyAdminApi({user_id:user_id});
       toast.success(data.message);
+      setIsModalOpen(false)
+      setConfirmId(null)
       fetchRequests()
       if (pendingAdmins.length === 1 && currentPage > 1) {
         setCurrentPage(prev => prev - 1);
@@ -43,6 +49,16 @@ const AdminVerificationPage = () => {
       handleApiError(error);
     }
   };
+  
+  const handleModalOpen = (user_id) =>{
+    setConfirmId(user_id)
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () =>{
+    setConfirmId(null)
+    setIsModalOpen(false)
+  } 
 
   return (
     <AdminLayout activeItem={'staffs'}>
@@ -54,7 +70,7 @@ const AdminVerificationPage = () => {
 
         <VerificationTable 
           admins={pendingAdmins} 
-          onVerify={handleVerify} 
+          onVerify={handleModalOpen} 
           isLoading={isLoading}
           currentPage={currentPage}
           totalItems={totalItems}
@@ -62,6 +78,13 @@ const AdminVerificationPage = () => {
           onPageChange={setCurrentPage}
         />
       </div>
+      <ConfirmationModal
+      open={isModalOPen}
+      title='Confirm Staff Verification'
+      message="Are you sure you want to approve this Staff account ? Once approved, this user will have administrative privileges."
+      onClose={handleCloseModal}
+      onConfirm={()=>handleVerify(confirmId)}
+      confirmText='Approve'/>
     </AdminLayout>
   );
 };

@@ -24,11 +24,11 @@ const Navbar = ({ onMenuClick }) => {
     setIsLoading(true)
     try{
       const data = await LogoutApi()
+      
       toast.success(data.message || "Logout successfully")
-      navigate('/', {replace:true})
-    }catch(error){
-      handleApiError(error)
+    }catch(_){
     }finally{
+      navigate('/', {replace:true})
       setIsLoading(false)
     }
   }

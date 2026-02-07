@@ -22,7 +22,6 @@ function App() {
 
   return (
     <>
-    <div>
       <ToastContainer position="top-right" />
       <Routes>
         <Route path="/signup" element={<RegistrationPage />}  />
@@ -44,7 +43,6 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword />}  />
 
       </Routes>
-    </div>
     </>
   )
 }
