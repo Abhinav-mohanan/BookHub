@@ -95,7 +95,7 @@ SECRET_KEY=your_django_secret_key
 ALLOWED_HOSTS=localhost,127.0.0.1,api.yourdomain.com
 
 # Database
-MY_PSQL_DB=postgres://username:password@host:port/db_name
+DATABASE_URL=postgres://username:password@host:port/db_name
 
 # Third-Party Services
 CLOUD_NAME=your_cloudinary_cloud_name
