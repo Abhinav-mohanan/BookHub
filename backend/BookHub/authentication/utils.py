@@ -27,8 +27,8 @@ def set_auth_cookie(response,tokens):
         key='access_token',
         value=tokens['access'],
         httponly=True,
-        secure=False,
-        samesite='Lax',
+        secure=settings.IS_PRODUCTION,
+        samesite='None' if settings.IS_PRODUCTION else 'Lax',
         max_age=15*60,
     )
 
@@ -36,8 +36,8 @@ def set_auth_cookie(response,tokens):
         key='refresh_token',
         value=tokens['refresh'],
         httponly=True,
-        secure=False,
-        samesite='Lax',
+        secure=settings.IS_PRODUCTION,
+        samesite='None' if settings.IS_PRODUCTION else 'Lax',
         max_age=1* 24 * 60 * 60
     )
     
