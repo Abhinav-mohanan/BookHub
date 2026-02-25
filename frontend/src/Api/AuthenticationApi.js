@@ -43,3 +43,9 @@ export const ResetPasswordAPI = async(data) =>{
     const response = await axiosInstance.post('reset/password/',data)
     return response.data
 }
+export const VerifyUserAPI = async() =>{
+    const response = await axios.get(`${CONFIG.BACKEND_URL}/auth/me`,
+        {withCredentials:true}
+    )
+    return response.data
+}
