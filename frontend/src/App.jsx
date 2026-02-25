@@ -17,6 +17,7 @@ import BorrowTransactions from "./pages/admin/BorrowTransactions"
 import ForgotPasswordEmail from "./pages/shared/ForgotPasswordEmail"
 import ResetPassword from "./pages/shared/ResetPassword"
 import ForgotPasswordOTP from "./pages/shared/ForgotPasswordOTP"
+import NotFound from "./pages/shared/NotFound"
 import { ProtectedRoute } from "./Api/ProtectedRoute"
 
 function App() {
@@ -31,6 +32,8 @@ function App() {
         <Route path="/forgot-password-email" element={<ForgotPasswordEmail />} />
         <Route path="/forgot-password-otp" element={<ForgotPasswordOTP />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="*" element={<NotFound />} />
+
 
         <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
         <Route path="/admin/category" element={<ProtectedRoute allowedRoles={['admin']}><CategoryManagementPage /></ProtectedRoute>} />
