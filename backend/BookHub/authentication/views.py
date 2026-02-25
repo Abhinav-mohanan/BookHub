@@ -34,14 +34,17 @@ class BaseSignupView(APIView):
 
 
 class UserSignupView(BaseSignupView):
+    permission_classes = [AllowAny]
     role = 'user'
 
 
 class AdminSignupView(BaseSignupView):
+    permission_classes = [AllowAny]
     role = 'admin'
 
 
 class ValidateOTPView(APIView):
+    permission_classes = [AllowAny]
 
     def post(self,request):
         serializer = ValidateOTPSerializer(data=request.data)
@@ -151,6 +154,7 @@ class CustomRefreshView(APIView):
         return response
 
 class ResendOTPView(APIView):
+    permission_classes = [AllowAny]
     def post(self,request):
         email = request.data.get('email')
         user = get_object_or_404(CustomUser, email=email)
@@ -159,6 +163,7 @@ class ResendOTPView(APIView):
                         status=status.HTTP_200_OK)
 
 class ForgotPasswordView(APIView):
+    permission_classes = [AllowAny]
     def post(self,request):
         serializer = ForgotPasswordSerializer(data=request.data)
         if serializer.is_valid():
@@ -170,6 +175,8 @@ class ForgotPasswordView(APIView):
 
 
 class ForgotPasswordOTPView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self,request):
         serializer = ForgotPasswordOTPSerializer(data=request.data)
         if serializer.is_valid():
@@ -179,6 +186,8 @@ class ForgotPasswordOTPView(APIView):
 
 
 class ResetPasswordView(APIView):
+    permission_classes = [AllowAny]
+    
     def post(self,request):
         serializer = ResetPasswordSerializer(data=request.data)
         if serializer.is_valid():
