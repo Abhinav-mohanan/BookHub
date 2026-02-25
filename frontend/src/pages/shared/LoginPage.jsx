@@ -7,9 +7,11 @@ import FormLink from '../../compoenents/shared/FormLink';
 import { LoginApi } from '../../Api/AuthenticationApi';
 import { handleApiError } from '../../compoenents/shared/ErrorHandler';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const LoginPage = ({ onNavigate }) => {
   const navigate = useNavigate()
+  const {checkAuth} = useAuth()
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [isLoading,setIsLoading] = useState(false)
@@ -37,6 +39,7 @@ const LoginPage = ({ onNavigate }) => {
     try {
       setIsLoading(true)
       const data = await LoginApi(formData)
+      await checkAuth()
       if (data.role === 'admin'){
         navigate('/admin/dashboard')
       }else{

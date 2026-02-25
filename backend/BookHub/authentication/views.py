@@ -186,4 +186,14 @@ class ResetPasswordView(APIView):
             return Response({"message":"Password reset successfully"},
                             status=status.HTTP_200_OK)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+class VerifyUser(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        return Response({
+            "id": request.user.user_id,
+            "email": request.user.email,
+            "role": request.user.role 
+        })
+    
     
